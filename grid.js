@@ -51,25 +51,44 @@ conn.once('open', function () {
   //READING FROM DATABASE
 
   //Prompt user for file name
-   prompt.start();
-   prompt.get(['filename'], function(err, result){
-     var readstream = gfs.createReadStream({
-          filename: result.filename
-     });
+  //  prompt.start();
+  //  prompt.get(['filename'], function(err, result){
+  //    var readstream = gfs.createReadStream({
+  //         filename: result.filename
+  //    });
+   //
+  //    readstream.on('error', function (err) {
+  //      console.log("error: " + err);
+  //    })
+   //
+  //    readstream.on('data', function(chunk) {
+  //      data += chunk;
+  //    });
+   //
+  //    readstream.on('end', function() {
+  //      console.log("data", JSON.parse(data));
+  //      newObj = JSON.parse(data);
+  //      console.log(newObj.test2);
+  //    });
+  //  });
 
-     readstream.on('error', function (err) {
-       console.log("error: " + err);
-     })
+  var Schema = mongoose.Schema;
 
-     readstream.on('data', function(chunk) {
-       data += chunk;
-     });
+  var Record = new Schema({
+    "filename": String,
+    "contentType": String,
+    "length": Number,
+    "chunkSize": Number,
+    "uploadDate": Date,
+    "aliases": String,
+    "metadata": String,
+    "md5": String
+  });
 
-     readstream.on('end', function() {
-       console.log("data", JSON.parse(data));
-       newObj = JSON.parse(data);
-       console.log(newObj.test2);
-     });
-   });
+  var Record = mongoose.model('Record', Record, 'fs.files');
+
+  Record.findById("56e1bb9b07bc3d45120f90ca", function(err,record){
+    console.log(record);
+  });
 
 });
