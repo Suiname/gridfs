@@ -32,13 +32,14 @@ conn.once('open', function () {
    var gfs = Grid(conn.db);
    //read from mongod
 
-   //WRITING TO DATABASE
+  //  WRITING TO DATABASE
   //  var objstream = new s.Readable();
   //  objstream.push(JSON.stringify(testObj));
   //  objstream.push(null);
    //
   //  var writestream = gfs.createWriteStream({
-  //      filename: 'awefopij'
+  //      filename: 'whatwhat',
+  //      metadata: {PatientID: 3}
   //  });
    //
   //  objstream.pipe(writestream);
@@ -53,25 +54,27 @@ conn.once('open', function () {
   //Prompt user for file name
   //  prompt.start();
   //  prompt.get(['filename'], function(err, result){
-  //    var readstream = gfs.createReadStream({
-  //         filename: result.filename
-  //    });
-   //
-  //    readstream.on('error', function (err) {
-  //      console.log("error: " + err);
-  //    })
-   //
-  //    readstream.on('data', function(chunk) {
-  //      data += chunk;
-  //    });
-   //
-  //    readstream.on('end', function() {
-  //      console.log("data", JSON.parse(data));
-  //      newObj = JSON.parse(data);
-  //      console.log(newObj.test2);
-  //    });
+    //  var readstream = gfs.createReadStream({
+    //       filename: result.filename
+    //  });
+     //
+    //  readstream.on('error', function (err) {
+    //    console.log("error: " + err);
+    //  })
+     //
+    //  readstream.on('data', function(chunk) {
+    //    data += chunk;
+    //  });
+     //
+    //  readstream.on('end', function() {
+    //    console.log("data", JSON.parse(data));
+    //    newObj = JSON.parse(data);
+    //    console.log(newObj.test2);
+    //  });
   //  });
+  //
 
+  //Create model based on fs.files Schema, and use it to query metadata field to retrieve gridfs objects
   var Schema = mongoose.Schema;
 
   var Record = new Schema({
@@ -82,13 +85,38 @@ conn.once('open', function () {
     "uploadDate": Date,
     "aliases": String,
     "metadata": String,
-    "md5": String
+    "md5": String,
   });
 
   var Record = mongoose.model('Record', Record, 'fs.files');
 
-  Record.findById("56e1bb9b07bc3d45120f90ca", function(err,record){
-    console.log(record);
-  });
+  Record.
+    find({
+      'metadata.PatientID': 3
+    }).
+    exec(function(err, data){
+      var filenameArray = []
+      var result = ''
+      for (var i = 0; i < data.length; i++) {
+        filenameArray.push(data[i].filename)
+      }
+      var readstream = gfs.createReadStream({
+           filename: filenameArray[0]
+      });
+
+      readstream.on('error', function (err) {
+        console.log("error: " + err);
+      })
+
+      readstream.on('data', function(chunk) {
+        result += chunk;
+      });
+
+      readstream.on('end', function() {
+        console.log("data", JSON.parse(result));
+        newObj = JSON.parse(result);
+        console.log(newObj.test2); // <--- will output value of test2 field, which should be 'blah'
+      });
+    })
 
 });
